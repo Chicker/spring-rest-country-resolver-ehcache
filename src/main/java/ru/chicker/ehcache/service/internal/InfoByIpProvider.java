@@ -1,4 +1,4 @@
-package ru.chicker.ehcache.services.internal;
+package ru.chicker.ehcache.service.internal;
 
 import javaslang.control.Try;
 

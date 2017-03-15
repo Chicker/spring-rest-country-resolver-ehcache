@@ -2,10 +2,10 @@ package ru.chicker.ehcache.config;
 
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
-import ru.chicker.ehcache.services.InfoByIpService;
-import ru.chicker.ehcache.services.InfoByIpServiceImpl;
-import ru.chicker.ehcache.services.internal.InfoByIpFreeGeoIpProvider;
-import ru.chicker.ehcache.services.internal.InfoByIpIpApiProvider;
+import ru.chicker.ehcache.service.InfoByIpService;
+import ru.chicker.ehcache.service.InfoByIpServiceImpl;
+import ru.chicker.ehcache.service.internal.InfoByIpFreeGeoIpProvider;
+import ru.chicker.ehcache.service.internal.InfoByIpIpApiProvider;
 
 @SpringBootConfiguration
 public class AppConfig {

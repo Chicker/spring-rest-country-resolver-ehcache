@@ -1,9 +1,9 @@
-package ru.chicker.ehcache.services;
+package ru.chicker.ehcache.service;
 
 import io.reactivex.Observable;
-import ru.chicker.ehcache.services.internal.InfoByIpFreeGeoIpProvider;
-import ru.chicker.ehcache.services.internal.InfoByIpIpApiProvider;
-import ru.chicker.ehcache.services.internal.InfoByIpProvider;
+import ru.chicker.ehcache.service.internal.InfoByIpFreeGeoIpProvider;
+import ru.chicker.ehcache.service.internal.InfoByIpIpApiProvider;
+import ru.chicker.ehcache.service.internal.InfoByIpProvider;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class InfoByIpServiceImpl implements ru.chicker.ehcache.services.InfoByIpService {
+public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpService {
     private static final String FALLBACK_COUNTRY_CODE = "lv";
 
     private final InfoByIpFreeGeoIpProvider freeGeoIpProvider;

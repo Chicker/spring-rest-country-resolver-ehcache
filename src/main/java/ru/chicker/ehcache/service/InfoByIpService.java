@@ -1,4 +1,4 @@
-package ru.chicker.ehcache.services;
+package ru.chicker.ehcache.service;
 
 import java.util.Optional;
 

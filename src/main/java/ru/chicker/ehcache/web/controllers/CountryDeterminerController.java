@@ -6,7 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import ru.chicker.ehcache.dto.CountryInformationDto;
 import ru.chicker.ehcache.dto.CountryInformationRequestDto;
-import ru.chicker.ehcache.services.InfoByIpService;
+import ru.chicker.ehcache.service.InfoByIpService;
 
 import javax.validation.Valid;
 import java.util.Optional;
