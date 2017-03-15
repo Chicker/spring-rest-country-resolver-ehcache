@@ -1,4 +1,4 @@
-package ru.chicker;
+package ru.chicker.ehcache;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
