@@ -47,7 +47,7 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
         // If a timeout has occurred we return the fallback country code
         // and after that we will get the result from the first response
         String countryCode = countryCodeObservable
-            .timeout(1, TimeUnit.SECONDS)
+            .timeout(3, TimeUnit.SECONDS)
             .onErrorReturn(this::falbackValueIfError)
             .first(FALLBACK_COUNTRY_CODE).blockingGet();
 
