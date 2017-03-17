@@ -1,5 +1,6 @@
 package ru.chicker.ehcache.config;
 
+import org.ehcache.CacheManager;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import ru.chicker.ehcache.service.InfoByIpService;
@@ -20,7 +21,9 @@ public class ServiceConfig {
     }
 
     @Bean
-    public InfoByIpService getInfoByIpService() {
-        return new InfoByIpServiceImpl(getInfoByIpFreeGeoIpProvider(), getInfoByIpIpApiProvider());
+    public InfoByIpService getInfoByIpService(InfoByIpFreeGeoIpProvider freeGeoIpProvider,
+                                              InfoByIpIpApiProvider ipApiProvider,
+                                              CacheManager cacheManager) {
+        return new InfoByIpServiceImpl(freeGeoIpProvider, ipApiProvider, cacheManager);
     }
 }
