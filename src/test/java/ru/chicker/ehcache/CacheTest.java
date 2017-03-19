@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -15,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.chicker.ehcache.helpers.RestApiTestHelpers;
 import ru.chicker.ehcache.service.internal.InfoByIpFreeGeoIpProvider;
 import ru.chicker.ehcache.service.internal.InfoByIpIpApiProvider;
+
+import javax.cache.Cache;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -47,9 +50,14 @@ public class CacheTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    @Qualifier("countryCodesCache")
+    private Cache<String, String> countryCodesCache;
+
     @Before
     public void setUp() throws Exception {
         reset(freeGeoIpProvider, infoByIpIpApiProvider);
+        countryCodesCache.clear();
     }
 
     @Test
@@ -68,5 +76,18 @@ public class CacheTest {
         // at the second time, this service should not be invoked, because the result will be 
         // taken from the cache
         verify(freeGeoIpProvider, times(1)).getCountryCode(any());
+    }
+
+    @Test
+    public void when_client_has_ip_that_is_in_the_cache_already_should_not_invoke_service()
+    throws Exception {
+        String testCountryCode = "ru";
+        String testIpAddress = "81.30.212.30";
+
+        countryCodesCache.put(testIpAddress, testCountryCode);
+
+        RestApiTestHelpers.simpleRequestToGetCountryApi(mockMvc, testCountryCode, testIpAddress);
+
+        verify(freeGeoIpProvider, never()).getCountryCode(testIpAddress);
     }
 }
