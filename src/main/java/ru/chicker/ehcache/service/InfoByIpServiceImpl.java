@@ -33,9 +33,13 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
 
     @Override
     public String getCountryCode(Optional<String> ipAddress) {
-        if (!ipAddress.isPresent()) return FALLBACK_COUNTRY_CODE;
+        return ipAddress
+            .map(this::getCountryCodeByIpAddress)
+            .orElse(FALLBACK_COUNTRY_CODE);
+    }
 
-        String countryCodeCacheValue = countryCodeCache.get(ipAddress.get());
+    private String getCountryCodeByIpAddress(String ipAddress) {
+        String countryCodeCacheValue = countryCodeCache.get(ipAddress);
 
         if (countryCodeCacheValue != null) return countryCodeCacheValue;
 
@@ -48,7 +52,7 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
             for (InfoByIpProvider infoByIpProvider : ipServiceList) {
                 CompletableFuture
                     .supplyAsync(() ->
-                        infoByIpProvider.getCountryCode(ipAddress.get()))
+                        infoByIpProvider.getCountryCode(ipAddress))
                     .thenAccept(countryCodeTry -> {
                         countryCodeTry.onSuccess(observer::onNext);
                     });
@@ -63,7 +67,7 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
             .first(FALLBACK_COUNTRY_CODE).blockingGet();
         String result = countryCode.toLowerCase();
 
-        countryCodeCache.put(ipAddress.get(), result);
+        countryCodeCache.put(ipAddress, result);
 
         return result;
     }
