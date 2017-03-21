@@ -1,8 +1,7 @@
 package ru.chicker.ehcache.service;
 
 import io.reactivex.Observable;
-import org.ehcache.Cache;
-import org.ehcache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import ru.chicker.ehcache.service.internal.InfoByIpFreeGeoIpProvider;
 import ru.chicker.ehcache.service.internal.InfoByIpIpApiProvider;
 import ru.chicker.ehcache.service.internal.InfoByIpProvider;
@@ -20,28 +19,17 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
     private final InfoByIpFreeGeoIpProvider freeGeoIpProvider;
     private final InfoByIpIpApiProvider infoByIpIpApiProvider;
 
-    private final Cache<String, String> countryCodeCache;
-
     public InfoByIpServiceImpl(InfoByIpFreeGeoIpProvider freeGeoIpProvider,
-                               InfoByIpIpApiProvider infoByIpIpApiProvider,
-                               CacheManager cacheManager) {
+                               InfoByIpIpApiProvider infoByIpIpApiProvider) {
         this.freeGeoIpProvider = freeGeoIpProvider;
         this.infoByIpIpApiProvider = infoByIpIpApiProvider;
-
-        countryCodeCache = cacheManager.getCache("countryCodes", String.class, String.class);
     }
 
     @Override
+    @Cacheable(cacheNames = "countryCodes",
+        key = "#ipAddress.get()",
+        condition = "#ipAddress.isPresent()")
     public String getCountryCode(Optional<String> ipAddress) {
-        return ipAddress
-            .map(this::getCountryCodeByIpAddress)
-            .orElse(FALLBACK_COUNTRY_CODE);
-    }
-
-    private String getCountryCodeByIpAddress(String ipAddress) {
-        String countryCodeCacheValue = countryCodeCache.get(ipAddress);
-
-        if (countryCodeCacheValue != null) return countryCodeCacheValue;
 
         List<InfoByIpProvider> ipServiceList = Arrays.asList(freeGeoIpProvider, infoByIpIpApiProvider);
 
@@ -52,7 +40,7 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
             for (InfoByIpProvider infoByIpProvider : ipServiceList) {
                 CompletableFuture
                     .supplyAsync(() ->
-                        infoByIpProvider.getCountryCode(ipAddress))
+                        infoByIpProvider.getCountryCode(ipAddress.get()))
                     .thenAccept(countryCodeTry -> {
                         countryCodeTry.onSuccess(observer::onNext);
                     });
@@ -66,9 +54,7 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
             .onErrorReturn(this::falbackValueIfError)
             .first(FALLBACK_COUNTRY_CODE).blockingGet();
         String result = countryCode.toLowerCase();
-
-        countryCodeCache.put(ipAddress, result);
-
+        
         return result;
     }
 

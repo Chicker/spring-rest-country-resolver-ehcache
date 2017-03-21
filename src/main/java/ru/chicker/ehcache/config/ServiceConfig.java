@@ -22,8 +22,7 @@ public class ServiceConfig {
 
     @Bean
     public InfoByIpService getInfoByIpService(InfoByIpFreeGeoIpProvider freeGeoIpProvider,
-                                              InfoByIpIpApiProvider ipApiProvider,
-                                              CacheManager cacheManager) {
-        return new InfoByIpServiceImpl(freeGeoIpProvider, ipApiProvider, cacheManager);
+                                              InfoByIpIpApiProvider ipApiProvider) {
+        return new InfoByIpServiceImpl(freeGeoIpProvider, ipApiProvider);
     }
 }
