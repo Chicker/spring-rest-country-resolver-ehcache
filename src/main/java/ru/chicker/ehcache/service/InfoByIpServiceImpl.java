@@ -1,11 +1,13 @@
 package ru.chicker.ehcache.service;
 
 import io.reactivex.Observable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import ru.chicker.ehcache.service.internal.InfoByIpFreeGeoIpProvider;
 import ru.chicker.ehcache.service.internal.InfoByIpIpApiProvider;
 import ru.chicker.ehcache.service.internal.InfoByIpProvider;
 
+import javax.cache.Cache;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,9 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
     private final InfoByIpFreeGeoIpProvider freeGeoIpProvider;
     private final InfoByIpIpApiProvider infoByIpIpApiProvider;
 
+    @Autowired
+    Cache<String, String> countryCodesCache;
+    
     public InfoByIpServiceImpl(InfoByIpFreeGeoIpProvider freeGeoIpProvider,
                                InfoByIpIpApiProvider infoByIpIpApiProvider) {
         this.freeGeoIpProvider = freeGeoIpProvider;
@@ -26,11 +31,12 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
     }
 
     @Override
-    @Cacheable(cacheNames = "countryCodes",
-        key = "#ipAddress.get()",
-        condition = "#ipAddress.isPresent()")
     public String getCountryCode(Optional<String> ipAddress) {
+        if (!ipAddress.isPresent()) return FALLBACK_COUNTRY_CODE;
 
+        String cachedCode = countryCodesCache.get(ipAddress.get());
+        if (null != cachedCode) return cachedCode;
+        
         List<InfoByIpProvider> ipServiceList = Arrays.asList(freeGeoIpProvider, infoByIpIpApiProvider);
 
         // We are sending the requests to all available services simultaneously.
@@ -51,6 +57,7 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
         // and after that we will get the result from the first response
         String countryCode = countryCodeObservable
             .timeout(3, TimeUnit.SECONDS)
+            .doOnNext(code -> countryCodesCache.put(ipAddress.get(), code))
             .onErrorReturn(this::falbackValueIfError)
             .first(FALLBACK_COUNTRY_CODE).blockingGet();
         String result = countryCode.toLowerCase();

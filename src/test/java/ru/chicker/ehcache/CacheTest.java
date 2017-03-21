@@ -19,6 +19,9 @@ import ru.chicker.ehcache.service.internal.InfoByIpIpApiProvider;
 
 import javax.cache.Cache;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,5 +92,22 @@ public class CacheTest {
         RestApiTestHelpers.simpleRequestToGetCountryApi(mockMvc, testCountryCode, testIpAddress);
 
         verify(freeGeoIpProvider, never()).getCountryCode(testIpAddress);
+    }
+
+    @Test
+    public void test_fallback_code_should_not_be_placed_in_the_cache() throws Exception {
+        String testCountryCode = "ru";
+        String fallbackCountryCode = "lv";
+
+        String testIpAddress = "81.30.212.30";
+
+        // all services returns exceptions, so fallback code should be returned. 
+        when(freeGeoIpProvider.getCountryCode(testIpAddress)).thenReturn(Try.failure(new Exception()));
+        when(infoByIpIpApiProvider.getCountryCode(testIpAddress)).thenReturn(Try.failure(new Exception()));
+
+        RestApiTestHelpers.simpleRequestToGetCountryApi(mockMvc, fallbackCountryCode, testIpAddress);
+
+        // the fallback code should not be cached.
+        assertThat(countryCodesCache.get(testIpAddress), is(nullValue()));
     }
 }
