@@ -26,7 +26,9 @@ public class InfoByIpServiceImpl implements ru.chicker.ehcache.service.InfoByIpS
     }
 
     @Override
-    @Cacheable(cacheNames = "countryCodes", keyGenerator = "myKeyGenerator")
+    @Cacheable(cacheNames = "countryCodes",
+        key = "#ipAddress.get()",
+        condition = "#ipAddress.isPresent()")
     public String getCountryCode(Optional<String> ipAddress) {
         if (!ipAddress.isPresent()) return FALLBACK_COUNTRY_CODE;
 
